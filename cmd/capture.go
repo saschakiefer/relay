@@ -6,24 +6,62 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/rs/zerolog/log"
+	"github.com/saschakiefer/relay/internal/normalize"
 	"github.com/spf13/cobra"
 )
 
-var captureCmd = &cobra.Command{
-	Use:   "capture [file]",
-	Short: "Capture a handwritten note and process it",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		log.Debug().
-			Str("agent", "capture").
-			Str("file", args[0]).
-			Msg("capturing handwritten note")
+var (
+	captureEngine string
+	captureInput  string
+)
 
-		// TODO: OCR → Agent → MCP
+var captureCmd = &cobra.Command{
+	Use:   "capture",
+	Short: "Capture a handwritten note using Google Vision OCR and process it",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := context.Background()
+
+		engine, err := resolveOCREngine(captureEngine)
+		if err != nil {
+			return err
+		}
+
+		rawText, err := engine.Extract(ctx, captureInput)
+		if err != nil {
+			return err
+		}
+
+		lines := normalize.Lines(rawText)
+
+		for _, line := range lines {
+			log.Debug().Msg(line)
+		}
+
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(captureCmd)
+
+	captureCmd.Flags().StringVarP(
+		&captureEngine,
+		"engine",
+		"e",
+		"google",
+		"OCR engine to use (google, <more to come>)",
+	)
+
+	captureCmd.Flags().StringVarP(
+		&captureInput,
+		"input",
+		"i",
+		"",
+		"Path to input image",
+	)
+
+	_ = captureCmd.MarkFlagRequired("input")
 }

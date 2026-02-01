@@ -9,9 +9,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/saschakiefer/relay/internal/ocr"
-	"github.com/spf13/viper"
-
 	"github.com/spf13/cobra"
 )
 
@@ -63,24 +60,4 @@ func init() {
 	)
 
 	_ = scanCmd.MarkFlagRequired("input")
-}
-
-func resolveOCREngine(engine string) (ocr.Engine, error) {
-	switch engine {
-
-	case "google":
-		creds := viper.GetString("ocr.google.credentials")
-		if creds == "" {
-			return nil, fmt.Errorf(
-				"google ocr selected but ocr.google.credentials not configured",
-			)
-		}
-
-		return &ocr.GoogleVisionEngine{
-			CredentialsPath: creds,
-		}, nil
-
-	default:
-		return nil, fmt.Errorf("unknown ocr engine: %s", engine)
-	}
 }

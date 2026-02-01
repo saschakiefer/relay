@@ -11,6 +11,7 @@ import (
 	"os"
 
 	vision "cloud.google.com/go/vision/apiv1"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/api/option"
 )
 
@@ -22,6 +23,7 @@ func (g *GoogleVisionEngine) Extract(
 	ctx context.Context,
 	inputPath string,
 ) (string, error) {
+	log.Info().Str("image", inputPath).Msg("Extracting text")
 
 	if g.CredentialsPath == "" {
 		return "", fmt.Errorf("google vision credentials not configured")
@@ -56,5 +58,7 @@ func (g *GoogleVisionEngine) Extract(
 		return "", fmt.Errorf("detect document text: %w", err)
 	}
 
+	log.Debug().Str("text", doc.Text).Msg("")
+	log.Info().Msg("Text successfully extracted")
 	return doc.GetText(), nil
 }
