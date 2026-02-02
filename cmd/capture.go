@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/rs/zerolog/log"
+	"github.com/saschakiefer/relay/internal/chunk"
 	"github.com/saschakiefer/relay/internal/normalize"
 	"github.com/spf13/cobra"
 )
@@ -38,6 +39,14 @@ var captureCmd = &cobra.Command{
 
 		for _, line := range lines {
 			log.Debug().Msg(line)
+		}
+
+		chunks := chunk.FromLines(lines)
+
+		for _, c := range chunks {
+			log.Debug().
+				Int("chunk_id", c.ID).
+				Msg(c.Text)
 		}
 
 		return nil
