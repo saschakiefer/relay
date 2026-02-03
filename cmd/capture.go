@@ -25,28 +25,58 @@ var captureCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
+		// 1. OCR Engine
 		engine, err := resolveOCREngine(captureEngine)
 		if err != nil {
 			return err
 		}
 
+		// 2. Classifier (LLM)
+		classifier, err := resolveClassifier()
+		if err != nil {
+			return err
+		}
+
+		// 3. OCR
 		rawText, err := engine.Extract(ctx, captureInput)
 		if err != nil {
 			return err
 		}
 
+		// 4. Normalize
 		lines := normalize.Lines(rawText)
 
 		for _, line := range lines {
 			log.Debug().Msg(line)
 		}
 
+		// 5. Chunk
 		chunks := chunk.FromLines(lines)
 
 		for _, c := range chunks {
 			log.Debug().
 				Int("chunk_id", c.ID).
 				Msg(c.Text)
+		}
+
+		// 6. Extract chunk texts
+		texts := make([]string, len(chunks))
+		for i, c := range chunks {
+			texts[i] = c.Text
+		}
+
+		// 7. Classify (LLM)
+		items, err := classifier.Classify(ctx, texts)
+		if err != nil {
+			return err
+		}
+
+		// 8. Output (for now)
+		for _, item := range items {
+			log.Debug().
+				Str("type", string(item.Type)).
+				Float64("confidence", item.Confidence).
+				Msg(item.Text)
 		}
 
 		return nil
