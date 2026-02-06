@@ -14,11 +14,13 @@ const (
 	ItemNote    ItemType = "note"
 	ItemIdea    ItemType = "idea"
 	ItemProject ItemType = "project"
+	ItemData    ItemType = "data"
 )
 
 type Item struct {
 	Type       ItemType `json:"type"`
 	Text       string   `json:"text"`
+	Level      int      `json:"level"`
 	Confidence float64  `json:"confidence"`
 }
 

@@ -12,6 +12,7 @@ import (
 
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/packages/param"
+	"github.com/rs/zerolog/log"
 )
 
 type OpenAIClassifier struct {
@@ -46,6 +47,7 @@ func (c *OpenAIClassifier) Classify(
 	}
 
 	raw := resp.Choices[0].Message.Content
+	log.Debug().Str("raw", raw).Msg("LLM output")
 
 	var items []Item
 	if err := json.Unmarshal([]byte(raw), &items); err != nil {
