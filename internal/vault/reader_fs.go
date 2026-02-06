@@ -28,6 +28,7 @@ func NewFilesystemVaultReader(root string) *FilesystemVaultReader {
 			".obsidian",
 			".git",
 			"node_modules",
+			".trash",
 		},
 	}
 }
